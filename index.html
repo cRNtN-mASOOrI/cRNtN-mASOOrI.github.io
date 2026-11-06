@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f2efe7">
+<title>The Living Score — Chirantan Masur</title>
+<style>
+  :root {
+    --paper: #f2efe7;
+    --ink: #22211f;
+    --muted: #77736b;
+    --rule: #c9c4b8;
+    --red: #c84b36;
+    --blue: #526b72;
+    --serif: Georgia, 'Times New Roman', serif;
+    --sans: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); color: var(--ink); }
+  body { margin: 0; font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+  button { font: inherit; }
+  .page { width: min(1440px, 100%); margin: auto; padding: 28px clamp(22px, 5vw, 76px) 64px; }
+  .masthead { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--ink); padding: 0 0 14px; font: 11px/1.2 var(--mono); letter-spacing:.11em; text-transform:uppercase; }
+  .masthead span:last-child { color:var(--muted); }
+  .opening { display:grid; grid-template-columns: 1.3fr .7fr; gap:clamp(28px,7vw,100px); align-items:end; padding: clamp(48px,9vw,124px) 0 54px; }
+  .eyebrow { margin:0 0 15px; color:var(--red); font: 11px/1.3 var(--mono); letter-spacing:.15em; text-transform:uppercase; }
+  h1 { margin:0; max-width:760px; font:400 clamp(54px, 9.2vw, 132px)/.87 var(--serif); letter-spacing:-.065em; }
+  h1 em { color:var(--red); font-weight:400; }
+  .intro { max-width:360px; margin:0 0 4px; color:#555149; font: 17px/1.65 var(--serif); }
+  .score-wrap { position:relative; border-top:1px solid var(--ink); border-bottom:1px solid var(--ink); padding:24px 0 22px; }
+  .score-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font:10px/1.3 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  .score-top strong { color:var(--ink); font-weight:400; }
+  .score { display:block; width:100%; height:auto; overflow:visible; }
+  .staff { stroke:var(--rule); stroke-width:1; vector-effect:non-scaling-stroke; }
+  .staff-label { fill:#77736b; font: 12px var(--mono); letter-spacing:1.3px; }
+  .measure-no { fill:#aaa497; font: 10px var(--mono); }
+  .note-hit { cursor:pointer; outline:none; }
+  .note-hit .hit { fill:transparent; }
+  .note-hit .stem { stroke:var(--ink); stroke-width:1.5; vector-effect:non-scaling-stroke; transition:stroke .2s ease; }
+  .note-hit .head { fill:var(--paper); stroke:var(--ink); stroke-width:1.7; vector-effect:non-scaling-stroke; transform-box:fill-box; transform-origin:center; transition:fill .2s ease, transform .2s ease; }
+  .note-hit .note-index { fill:var(--muted); font:10px var(--mono); text-anchor:middle; }
+  .note-hit:hover .head, .note-hit:focus-visible .head, .note-hit[aria-pressed="true"] .head { fill:var(--red); stroke:var(--red); transform:scale(1.16); }
+  .note-hit[aria-pressed="true"] .stem, .note-hit:hover .stem, .note-hit:focus-visible .stem { stroke:var(--red); }
+  .note-hit:focus-visible .hit { stroke:var(--red); stroke-width:1; stroke-dasharray:3 3; }
+  .listen-hint { margin:10px 0 0; display:flex; justify-content:space-between; gap:12px; color:var(--muted); font:11px/1.5 var(--mono); }
+  .listen-hint span:last-child { text-align:right; }
+  .story { display:grid; grid-template-columns:minmax(170px,.48fr) minmax(0,1.52fr); gap:clamp(32px,8vw,110px); padding:clamp(48px,8vw,100px) 0 86px; }
+  .story-side { border-top:1px solid var(--ink); padding-top:13px; }
+  .story-side p { margin:0 0 25px; font:10px/1.4 var(--mono); text-transform:uppercase; letter-spacing:.11em; color:var(--muted); }
+  .part-nav { list-style:none; padding:0; margin:0; }
+  .part-nav button { background:none; border:0; border-bottom:1px solid var(--rule); color:var(--muted); display:flex; align-items:baseline; justify-content:space-between; width:100%; min-height:49px; padding:9px 0; text-align:left; cursor:pointer; }
+  .part-nav button[aria-pressed="true"] { color:var(--red); }
+  .part-nav button:focus-visible { outline:2px solid var(--red); outline-offset:3px; }
+  .part-nav .nav-name { font:20px var(--serif); }
+  .part-nav .nav-no { font:10px var(--mono); }
+  .detail { border-top:1px solid var(--ink); padding-top:11px; min-height:270px; }
+  .detail-meta { display:flex; justify-content:space-between; gap:20px; color:var(--muted); font:10px var(--mono); letter-spacing:.1em; text-transform:uppercase; }
+  .detail h2 { margin:40px 0 16px; max-width:760px; font:400 clamp(38px,6vw,76px)/.98 var(--serif); letter-spacing:-.045em; }
+  .detail-lede { max-width:650px; margin:0 0 30px; color:#555149; font:18px/1.65 var(--serif); }
+  .entries { display:grid; grid-template-columns:1fr 1fr; gap:0 34px; max-width:780px; border-top:1px solid var(--rule); }
+  .entry { padding:15px 0 17px; border-bottom:1px solid var(--rule); }
+  .entry b { display:block; margin-bottom:3px; font-size:14px; font-weight:600; }
+  .entry span { display:block; color:var(--muted); font-size:13px; }
+  .closing { border-top:1px solid var(--ink); padding:16px 0 0; display:grid; grid-template-columns:1fr 1fr; gap:24px; font:11px/1.5 var(--mono); color:var(--muted); }
+  .closing p { margin:0; }
+  .closing p:last-child { text-align:right; }
+  .no-js { max-width:700px; margin:0 auto 40px; }
+  .no-js h2 { font:32px var(--serif); }
+  .no-js li { margin:12px 0; }
+  @media (max-width:700px) {
+    .page { padding-top:20px; }
+    .opening { grid-template-columns:1fr; gap:28px; padding:62px 0 36px; }
+    .intro { max-width:500px; }
+    .score-wrap { padding-top:17px; }
+    .score { min-height:200px; }
+    .staff-label { font-size:14px; }
+    .story { grid-template-columns:1fr; gap:30px; padding:55px 0 62px; }
+    .story-side { display:grid; grid-template-columns:1fr; }
+    .story-side p { margin-bottom:8px; }
+    .part-nav { display:grid; grid-template-columns:1fr 1fr; column-gap:20px; }
+    .detail { min-height:unset; }
+    .detail h2 { margin-top:30px; }
+    .entries { grid-template-columns:1fr; }
+    .closing { grid-template-columns:1fr; }
+    .closing p:last-child { text-align:left; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; }
+  }
+  @media print { .page { padding:20px; } .note-hit .head { fill:var(--paper) !important; } }
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="masthead"><span>Chirantan Masur · Study in four parts</span><span>Mississauga, Ontario · 01—04</span></header>
+  <section class="opening" aria-labelledby="title">
+    <div><p class="eyebrow">A working score · 2026</p><h1 id="title">Practice,<br>in many <em>keys.</em></h1></div>
+    <p class="intro">Some things are learned by solving. Others by listening, teaching, or keeping a room safe. Choose a measure to hear how the parts connect.</p>
+  </section>
+  <section class="score-wrap" aria-label="Interactive score navigation">
+    <div class="score-top"><strong>Four measures</strong><span>Choose a note to reveal its part</span></div>
+    <svg class="score" viewBox="0 0 1000 270" role="group" aria-label="Four interactive measures: Build, Teach, Perform, Solve">
+      <g aria-hidden="true">
+        <line class="staff" x1="24" y1="54" x2="976" y2="54"/><line class="staff" x1="24" y1="64" x2="976" y2="64"/><line class="staff" x1="24" y1="74" x2="976" y2="74"/><line class="staff" x1="24" y1="84" x2="976" y2="84"/><line class="staff" x1="24" y1="94" x2="976" y2="94"/>
+        <line class="staff" x1="24" y1="114" x2="976" y2="114"/><line class="staff" x1="24" y1="124" x2="976" y2="124"/><line class="staff" x1="24" y1="134" x2="976" y2="134"/><line class="staff" x1="24" y1="144" x2="976" y2="144"/><line class="staff" x1="24" y1="154" x2="976" y2="154"/>
+        <line class="staff" x1="24" y1="174" x2="976" y2="174"/><line class="staff" x1="24" y1="184" x2="976" y2="184"/><line class="staff" x1="24" y1="194" x2="976" y2="194"/><line class="staff" x1="24" y1="204" x2="976" y2="204"/><line class="staff" x1="24" y1="214" x2="976" y2="214"/>
+        <text class="staff-label" x="28" y="44">I · BUILD</text><text class="staff-label" x="28" y="104">II · TEACH</text><text class="staff-label" x="28" y="164">III · PERFORM</text><text class="staff-label" x="28" y="224">IV · SOLVE</text>
+        <text class="measure-no" x="940" y="44">01</text><text class="measure-no" x="940" y="104">02</text><text class="measure-no" x="940" y="164">03</text><text class="measure-no" x="940" y="224">04</text>
+      </g>
+      <g class="note-hit" data-part="build" role="button" tabindex="0" aria-label="Reveal Build: web development, Python, and app development interests" aria-pressed="false">
+        <ellipse class="hit" cx="690" cy="65" rx="110" ry="25"/><line class="stem" x1="708" y1="63" x2="708" y2="28"/><ellipse class="head" cx="690" cy="66" rx="11" ry="7" transform="rotate(-20 690 66)"/><text class="note-index" x="690" y="98">01</text>
+      </g>
+      <g class="note-hit" data-part="teach" role="button" tabindex="0" aria-label="Reveal Teach: swim instruction, lifeguarding, tutoring, and karate instruction" aria-pressed="false">
+        <ellipse class="hit" cx="790" cy="125" rx="110" ry="25"/><line class="stem" x1="808" y1="123" x2="808" y2="88"/><ellipse class="head" cx="790" cy="126" rx="11" ry="7" transform="rotate(-20 790 126)"/><text class="note-index" x="790" y="158">02</text>
+      </g>
+      <g class="note-hit" data-part="perform" role="button" tabindex="0" aria-label="Reveal Perform: clarinet, Wind Ensemble, Jazz Band, and Peel Honour Band" aria-pressed="true">
+        <ellipse class="hit" cx="890" cy="185" rx="90" ry="25"/><line class="stem" x1="908" y1="183" x2="908" y2="148"/><ellipse class="head" cx="890" cy="186" rx="11" ry="7" transform="rotate(-20 890 186)"/><text class="note-index" x="890" y="218">03</text>
+      </g>
+      <g class="note-hit" data-part="solve" role="button" tabindex="0" aria-label="Reveal Solve: math contests, computer science clubs, and STEM activities" aria-pressed="false">
+        <ellipse class="hit" cx="610" cy="205" rx="100" ry="25"/><line class="stem" x1="628" y1="203" x2="628" y2="168"/><ellipse class="head" cx="610" cy="206" rx="11" ry="7" transform="rotate(-20 610 206)"/><text class="note-index" x="610" y="238">04</text>
+      </g>
+    </svg>
+    <p class="listen-hint"><span>Keyboard: tab to a note · enter to select</span><span>Touch: tap a note or use the part list below</span></p>
+  </section>
+  <section class="story" aria-live="polite" aria-atomic="true">
+    <nav class="story-side" aria-label="Choose a part">
+      <p>Choose a part</p>
+      <ul class="part-nav">
+        <li><button type="button" data-part="build" aria-pressed="false"><span class="nav-name">Build</span><span class="nav-no">I</span></button></li>
+        <li><button type="button" data-part="teach" aria-pressed="false"><span class="nav-name">Teach</span><span class="nav-no">II</span></button></li>
+        <li><button type="button" data-part="perform" aria-pressed="true"><span class="nav-name">Perform</span><span class="nav-no">III</span></button></li>
+        <li><button type="button" data-part="solve" aria-pressed="false"><span class="nav-name">Solve</span><span class="nav-no">IV</span></button></li>
+      </ul>
+    </nav>
+    <article class="detail" id="part-detail">
+      <div class="detail-meta"><span id="detail-number">Part III · 03</span><span id="detail-tag">Listening / ensemble</span></div>
+      <h2 id="detail-title">A place in the ensemble.</h2>
+      <p class="detail-lede" id="detail-lede">Clarinet has been a long study in listening closely, preparing well, and making space for the whole group to sound stronger.</p>
+      <div class="entries" id="detail-entries">
+        <div class="entry"><b>Peel Honour Band</b><span>1st Senior Clarinet</span></div>
+        <div class="entry"><b>Wind Ensemble &amp; Jazz Band</b><span>School music activities</span></div>
+        <div class="entry"><b>RCM Piano</b><span>Level 6 · First Class Honours</span></div>
+        <div class="entry"><b>Karate</b><span>Brown Belt · assistant instructor</span></div>
+      </div>
+    </article>
+  </section>
+  <footer class="closing"><p>A small study in practice, patience, and the things that connect them.</p><p>Selected details from education, work, activities &amp; interests</p></footer>
+  <noscript><section class="no-js"><h2>Four parts</h2><ol><li><b>Build:</b> Python, HTML and CSS web development; app development interest.</li><li><b>Teach:</b> Swim instructor and lifeguard; junior swim instructor; karate assistant instructor; peer tutoring.</li><li><b>Perform:</b> 1st Senior Clarinet, Peel Honour Band; Wind Ensemble, Jazz Band; RCM Piano Level 6 with First Class Honours.</li><li><b>Solve:</b> Math and computer science clubs and contests; Top 25% worldwide in Grade 11 Fermat Math Contest; school Big Data Challenge and STEMposium.</li></ol></section></noscript>
+</main>
+<script>
+const parts = {
+  build: {
+    no: 'Part I · 01', tag: 'Making / experimenting', title: 'Ideas, made tangible.',
+    lede: 'A student developer learning by building: from the logic of Python to the small details that make a web page work.',
+    entries: [['Web development','HTML & CSS'],['Programming','Python'],['App development','A growing interest'],['STEMposium','School participation']]
+  },
+  teach: {
+    no: 'Part II · 02', tag: 'Coaching / care', title: 'Make room for someone else to learn.',
+    lede: 'Teaching has meant meeting people where they are, explaining clearly, and paying attention to the whole room.',
+    entries: [['Swim Instructor / Lifeguard','City of Mississauga · Jan 2026–present'],['Junior Swim Instructor','City of Mississauga · Sep–Dec 2025'],['Karate Assistant Instructor','Goal Max Karate & Fitness · 2019–2025'],['Peer Tutor / Homework Helper','Glenforest Secondary School · 2022–2023']]
+  },
+  perform: {
+    no: 'Part III · 03', tag: 'Listening / ensemble', title: 'A place in the ensemble.',
+    lede: 'Clarinet has been a long study in listening closely, preparing well, and making space for the whole group to sound stronger.',
+    entries: [['Peel Honour Band','1st Senior Clarinet'],['Wind Ensemble & Jazz Band','School music activities'],['RCM Piano','Level 6 · First Class Honours'],['Karate','Brown Belt · assistant instructor']]
+  },
+  solve: {
+    no: 'Part IV · 04', tag: 'Patterns / questions', title: 'Follow the question further.',
+    lede: 'Math contests, computer science clubs, and STEM events make a practice of staying curious when a problem takes more than one pass.',
+    entries: [['Fermat Math Contest','Top 25% worldwide · Grade 11'],['Academic average','95%+ throughout high school'],['Math & CS clubs','AMC, CSMC, COMC, CCC, Euclid, Fermat'],['Big Data Challenge','School participation']]
+  }
+};
+const controls = [...document.querySelectorAll('[data-part]')];
+function choosePart(key) {
+  const part = parts[key]; if (!part) return;
+  controls.forEach(el => el.setAttribute('aria-pressed', String(el.dataset.part === key)));
+  document.getElementById('detail-number').textContent = part.no;
+  document.getElementById('detail-tag').textContent = part.tag;
+  document.getElementById('detail-title').textContent = part.title;
+  document.getElementById('detail-lede').textContent = part.lede;
+  const list = document.getElementById('detail-entries'); list.replaceChildren();
+  part.entries.forEach(([name, note]) => {
+    const row = document.createElement('div'); row.className = 'entry';
+    const title = document.createElement('b'); title.textContent = name;
+    const description = document.createElement('span'); description.textContent = note;
+    row.append(title, description); list.append(row);
+  });
+}
+controls.forEach(el => {
+  el.addEventListener('click', () => choosePart(el.dataset.part));
+  if (el.tagName.toLowerCase() === 'g') el.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choosePart(el.dataset.part); }
+  });
+});
+</script>
+</body>
+</html>
